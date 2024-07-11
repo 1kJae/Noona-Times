@@ -4,6 +4,9 @@ let newsList = [];
 const menus = document.querySelectorAll(".menus button")
 menus.forEach(menu=>menu.addEventListener("click", (event)=>getNewsByCategory(event)))
 
+const sideMenus = document.querySelectorAll(".side-menu-list button")
+sideMenus.forEach(sideMenus=>sideMenus.addEventListener("click", (event)=>getNewsByCategory(event)))
+
 let searchInput = document.getElementById("search-input");
 searchInput.addEventListener("keydown", function(event) {
   if (event.key === "Enter") {
@@ -67,7 +70,7 @@ const render = () => {
     const newsHTML = newsList.map(
         (news) => `<div class="row news">
         <div class="col-lg-4">
-            <img class="news-img-size" src="${news.urlToImage}"||"${otherImage}"/>
+            <img class="news-img-size" src="${news.urlToImage || otherImage}"/>
         </div>
         <div class="col-lg-8">
             <h2>${news.title}</h2>
