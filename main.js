@@ -14,39 +14,47 @@ searchInput.addEventListener("keydown", function(event) {
   }
 });
 
-const getNewsByKeyword =async () => {
+let url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us`)
+
+const getNews = async () => { 
+  try{
+    const response = await fetch(url)
+    const data = await response.json()
+    if (response.status === 200) {
+      if(data.articles.length === 0) {
+        throw new Error("no result for this search");
+      }
+      newsList = data.articles
+      render()
+    }
+    else {
+      throw new Error(data.message)
+    }
+  } catch(error) {
+    errorRender(error.message)
+  }
+}
+
+const getNewsByKeyword = async () => {
   let keyWord = document.getElementById("search-input").value
   url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us&q=${keyWord}`)
-  const response = await fetch(url)
-  const data = await response.json()
-  newsList = data.articles
-  render();
+  getNews()
 }
 
 const getLatestNews = async () => {
-    // const url = new URL(`https://noona-times-24-07-09.netlify.app/top-headlines?country=${COUNTRY}&apiKey=${API_KEY}`);
-    // let url = `https://noona-times-24-07-09.netlify.app/top-headlines`
+  // const url = new URL(`https://noona-times-24-07-09.netlify.app/top-headlines?country=${COUNTRY}&apiKey=${API_KEY}`);
+  // let url = `https://noona-times-24-07-09.netlify.app/top-headlines`
     
-    const url = new URL(
-        `https://third-js-project-sw-copy.netlify.app/top-headlines?country=us`
-    ); 
-
-    const response = await fetch(url)
-    const data = await response.json();
-    newsList = data.articles;
-    render()
-    console.log("ddd", newsList);
+  url = new URL(
+    `https://third-js-project-sw-copy.netlify.app/top-headlines?country=us`
+  ); 
+  getNews();
 } 
 
 const getNewsByCategory = async (event) => {
   const category = event.target.textContent.toLowerCase();
-  console.log("category", category)
-  const url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us&category=${category}`)
-  const response = await fetch(url)
-  const data = await response.json();
-  newsList = data.articles;
-  console.log("ddd", data)
-  render();
+  url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us&category=${category}`)
+  getNews();
 }
 
 const openNav = () => {
@@ -65,6 +73,7 @@ const openSearchBox = () => {
     inputArea.style.display = "inline";
   }
 };
+
 const otherImage = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqEWgS0uxxEYJ0PsOb2OgwyWvC0Gjp8NUdPw&usqp=CAU"
 const render = () => {
     const newsHTML = newsList.map(
@@ -85,7 +94,32 @@ const render = () => {
         </div>
     </div>`
     ).join('');
-    document.getElementById('news-board').innerHTML=newsHTML;
+
+    document.getElementById('news-board').innerHTML = newsHTML;
+}
+
+const errorRender = (errorMessage) => {
+  const errorHTML = `<div class="alert alert-danger" role="alert">
+  ${errorMessage}
+  </div>`;
+
+  document.getElementById("news-board").innerHTML=errorHTML
 }
 
 getLatestNews();
+
+// 에러 핸들링 1
+// let weight = 29
+// try{
+  // 소스코드를 쓴다.
+  // 이 안에서 에러가 발생하면
+  // noona
+
+  // if (weight < 30) {
+  //   throw new Error ("당신은 너무 말랐어") 에러를 강제로 발생
+  // 에러가 발생되는 순간 아래 코드는 발생 안 되고 바로 catch로 내려감.
+  // }
+// } catch(error) {
+  // console.log("내가 잡은 에러는", error.message)
+  // catch가 에러를 잡아준다.
+// }
