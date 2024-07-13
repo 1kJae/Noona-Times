@@ -16,16 +16,26 @@ searchInput.addEventListener("keydown", function(event) {
 
 let url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us`)
 
+let totalResults = 0;
+let page = 1;
+const pageSize = 10;
+const groupSize = 5;
+
 const getNews = async () => { 
   try{
+    url.searchParams.set("page", page) // -> &page = page
+    url.searchParams.set("pageSize", pageSize)
     const response = await fetch(url)
+    
     const data = await response.json()
     if (response.status === 200) {
       if(data.articles.length === 0) {
         throw new Error("no result for this search");
       }
-      newsList = data.articles
+      newsList = data.articles;
+      totalResults = data.totalResults
       render()
+      paginationRender()
     }
     else {
       throw new Error(data.message)
@@ -37,8 +47,8 @@ const getNews = async () => {
 
 const getNewsByKeyword = async () => {
   let keyWord = document.getElementById("search-input").value
-  url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us&q=${keyWord}`)
-  getNews()
+  url = new URL(`https://noona-times-be-5ca9402f90d9.herokuapp.com/top-headlines?country=us&q=${keyWord}`)
+  await getNews()
 }
 
 const getLatestNews = async () => {
@@ -46,15 +56,15 @@ const getLatestNews = async () => {
   // let url = `https://noona-times-24-07-09.netlify.app/top-headlines`
     
   url = new URL(
-    `https://third-js-project-sw-copy.netlify.app/top-headlines?country=us`
+    `https://noona-times-be-5ca9402f90d9.herokuapp.com/top-headlines?country=us`
   ); 
-  getNews();
+  await getNews();
 } 
 
 const getNewsByCategory = async (event) => {
   const category = event.target.textContent.toLowerCase();
-  url = new URL(`https://third-js-project-sw-copy.netlify.app/top-headlines?country=us&category=${category}`)
-  getNews();
+  url = new URL(`https://noona-times-be-5ca9402f90d9.herokuapp.com/top-headlines?country=us&category=${category}`)
+  await getNews();
 }
 
 const openNav = () => {
@@ -106,20 +116,62 @@ const errorRender = (errorMessage) => {
   document.getElementById("news-board").innerHTML=errorHTML
 }
 
+const paginationRender = () => {
+  const totalPages = Math.ceil(totalResults / pageSize)
+  const pageGroup = Math.ceil(page / groupSize);
+  let lastPage = pageGroup * groupSize;
+
+  if(lastPage > totalPages) {
+    lastPage = totalPages
+  }
+  const firstPage = lastPage - (groupSize - 1) <= 0 ? 1 : lastPage - (groupSize - 1);
+
+  let paginationHTML = ''
+  
+  if(page < 1 || page >= 2) {
+    paginationHTML += `<li class="page-item" onclick="moveToPage(${1})">
+        <a class="page-link" href="#" aria-label="Previous">
+          <span aria-hidden="true">&lt;&lt;</span>
+        </a>
+      </li>`
+    paginationHTML += `<li class="page-item" onclick="minusToPage()">
+      <a class="page-link" href="#" aria-label="Previous">
+        <span aria-hidden="true">&lt;</span>
+      </a>
+    </li>`
+  }
+
+  for (let i = firstPage; i <= lastPage; i++) {
+    paginationHTML += `<li class="page-item ${i == page ? "active" : ""}" onclick="moveToPage(${i})"><a class="page-link">${i}</a></li>`;
+  }
+  
+  if (page > 20 || page <= 19) {
+    paginationHTML += `<li class="page-item" onclick="plusToPage()">
+    <a class="page-link" href="#" aria-label="Previous">
+      <span aria-hidden="true">&gt;</span>
+    </a>
+    </li>` 
+    paginationHTML += `<li class="page-item" onclick="moveToPage(${20})">
+        <a class="page-link" href="#" aria-label="Previous">
+          <span aria-hidden="true">&gt;&gt;</span>
+        </a>
+      </li>`
+  }
+  document.querySelector(".pagination").innerHTML = paginationHTML
+}
+ 
+const plusToPage = () => {
+  page++;
+  getNews()
+}
+const minusToPage = () => {
+  page--;
+  getNews()
+}
+
+const moveToPage = (pageNum) => {
+  page = pageNum;
+  getNews()
+};
+
 getLatestNews();
-
-// 에러 핸들링 1
-// let weight = 29
-// try{
-  // 소스코드를 쓴다.
-  // 이 안에서 에러가 발생하면
-  // noona
-
-  // if (weight < 30) {
-  //   throw new Error ("당신은 너무 말랐어") 에러를 강제로 발생
-  // 에러가 발생되는 순간 아래 코드는 발생 안 되고 바로 catch로 내려감.
-  // }
-// } catch(error) {
-  // console.log("내가 잡은 에러는", error.message)
-  // catch가 에러를 잡아준다.
-// }
