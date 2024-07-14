@@ -64,6 +64,7 @@ const getLatestNews = async () => {
 const getNewsByCategory = async (event) => {
   const category = event.target.textContent.toLowerCase();
   url = new URL(`https://noona-times-be-5ca9402f90d9.herokuapp.com/top-headlines?country=us&category=${category}`)
+  page = 1;
   await getNews();
 }
 
@@ -119,22 +120,44 @@ const errorRender = (errorMessage) => {
 const paginationRender = () => {
   const totalPages = Math.ceil(totalResults / pageSize)
   const pageGroup = Math.ceil(page / groupSize);
+
+  // let totalResults = 0;
+  // let page = 1;
+  // const pageSize = 10;
+  // const groupSize = 5;
+
   let lastPage = pageGroup * groupSize;
 
-  if(lastPage > totalPages) {
-    lastPage = totalPages
-  }
-  const firstPage = lastPage - (groupSize - 1) <= 0 ? 1 : lastPage - (groupSize - 1);
+  if (page <= 5) {
+    if (page <= 3) {
+      lastPage = pageGroup * groupSize - 2;
+    } else if (page == 4) {
+      lastPage = pageGroup * groupSize - 1;
+    }
+  } 
+  let firstPage = lastPage - (groupSize - 1) <= 0 ? 1 : lastPage - (groupSize - 1);
+  
+  if (page <= 5) {
+    if (page == 3) {
+      firstPage++;
+      lastPage++;
+    } else if (page == 4) {
+      firstPage+=2;
+      lastPage++;
+    } else if (page == 5) {
+      firstPage+=2;
+    }
+  } 
 
   let paginationHTML = ''
-  
+
   if(page < 1 || page >= 2) {
     paginationHTML += `<li class="page-item" onclick="moveToPage(${1})">
         <a class="page-link" href="#" aria-label="Previous">
           <span aria-hidden="true">&lt;&lt;</span>
         </a>
       </li>`
-    paginationHTML += `<li class="page-item" onclick="minusToPage()">
+    paginationHTML += `<li class="page-item" onclick="moveToPage(${page-1})">
       <a class="page-link" href="#" aria-label="Previous">
         <span aria-hidden="true">&lt;</span>
       </a>
@@ -145,8 +168,9 @@ const paginationRender = () => {
     paginationHTML += `<li class="page-item ${i == page ? "active" : ""}" onclick="moveToPage(${i})"><a class="page-link">${i}</a></li>`;
   }
   
+  
   if (page > 20 || page <= 19) {
-    paginationHTML += `<li class="page-item" onclick="plusToPage()">
+    paginationHTML += `<li class="page-item" onclick="moveToPage(${page+1})">
     <a class="page-link" href="#" aria-label="Previous">
       <span aria-hidden="true">&gt;</span>
     </a>
@@ -158,15 +182,6 @@ const paginationRender = () => {
       </li>`
   }
   document.querySelector(".pagination").innerHTML = paginationHTML
-}
- 
-const plusToPage = () => {
-  page++;
-  getNews()
-}
-const minusToPage = () => {
-  page--;
-  getNews()
 }
 
 const moveToPage = (pageNum) => {
